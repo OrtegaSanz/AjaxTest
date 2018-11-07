@@ -1,0 +1,339 @@
+﻿
+@{
+    /**/
+
+    ViewBag.Title = "Index";
+}
+<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+<script type="text/javascript">
+    //Buscar Proveedor
+    function buscarProveedor() {
+        $(document).ready(function () {
+            var RUC = $("#RUC").val().trim();
+            $.ajax({
+                type: "GET",
+                url: '@Url.Action("buscarProveedor","AjaxTest")',
+                data: { a: RUC },
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: successFunc,
+                error: errorFunc
+        });
+
+            function successFunc(data, status) {
+                document.getElementById("RazonSocial").value = data.RAZON_SOCIAL;
+                document.getElementById("Direccion").value = data.DIRECCION;
+                document.getElementById("RUC2").value = data.RUC;
+                document.getElementById("Telefono").value = data.TELEFONO;
+                //alert(data.RAZON_SOCIAL);
+        }
+
+        function errorFunc() {
+        alert('error');
+        }
+        });
+    }
+    //-------
+
+    //Buscar Material
+    function buscarMaterial() {
+        $(document).ready(function () {
+            var CODIGO = $("#CODIGO").val().trim();
+            $.ajax({
+                type: "GET",
+                url: '@Url.Action("buscarMaterial","AjaxTest")',
+                data: { b: CODIGO },
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: successFunc,
+                error: errorFunc
+        });
+
+            function successFunc(data1, status) {
+                document.getElementById("Descripcion").value = data1[0];
+                document.getElementById("preU").value = data1[1]
+                document.getElementById("CODIGO2").value = data1[2];
+                //alert(data1[2]);
+        }
+
+        function errorFunc() {
+        alert('error');
+        }
+        });
+    }
+    //-------
+    //Grid View
+    var codigos = new Array();
+    var descripcions = new Array();
+    var cantidads = new Array();
+    var preUs = new Array();
+    var subTs = new Array();
+    var count = new Array();
+    var i = count.length;
+    function productsAdd() {
+        var codigo = document.getElementById("CODIGO2").value;
+        var descripcion = document.getElementById("Descripcion").value;
+        var cantidad = document.getElementById("Cantidad").value;
+        var preU = document.getElementById("preU").value;
+        var subT = (preU * cantidad) / 1.0;
+        var total = 0;
+        codigos.push(codigo);
+        descripcions.push(descripcion);
+        cantidads.push(cantidad);
+        preUs.push(preU);
+        subTs.push(subT);
+        count.push(i);
+        $("#productTable tbody").remove();
+        if ($("#productTable tbody").length == 0) {
+            $("#productTable").append("<tbody></tbody>");
+        }
+        for (i = 0; i < count.length; i++) {
+            // Append product to the table
+            $("#productTable tbody").append(
+                "<tr>" +
+                "<td>" + i + "</td>" +
+                "<td>" + codigos[i] + "</td>" +
+                "<td>" + descripcions[i] + "</td>" +
+                "<td>" + cantidads[i] + "</td>" +
+                "<td>" + preUs[i] + "</td>" +
+                "<td>" + subTs[i] + "</td>" +
+                "<td>" + "<button type='button' " + "onclick='productDelete(this," + i + ")' " + "class='btn btn-default'>" + "Delete" + "</button>" +
+                "</td>" +
+                "</tr>"
+            );
+            total += subTs[i];
+        }
+        document.getElementById("total").value = total;
+        //document.getElementById("count").innerHTML = count[i];
+    }
+    function productDelete(ctl, id) {
+        if (id + 1 == count.length) {
+            var total = 0;
+            $(ctl).parents("tr").remove();
+            alert(id);
+            count.splice(id);
+            codigos.splice(id);
+            descripcions.splice(id);
+            cantidads.splice(id);
+            preUs.splice(id);
+            subTs.splice(id);
+            $("#productTable tbody").remove();
+            if ($("#productTable tbody").length == 0) {
+                $("#productTable").append("<tbody></tbody>");
+            }
+            for (i = 0; i < count.length; i++) {
+                // Append product to the table
+                $("#productTable tbody").append(
+                    "<tr>" +
+                    "<td>" + i + "</td>" +
+                    "<td>" + codigos[i] + "</td>" +
+                    "<td>" + descripcions[i] + "</td>" +
+                    "<td>" + cantidads[i] + "</td>" +
+                    "<td>" + preUs[i] + "</td>" +
+                    "<td>" + subTs[i] + "</td>" +
+                    "<td>" + "<button type='button' " + "onclick='productDelete(this," + i + ")' " + "class='btn btn-default'>" + "Delete" + "</button>" +
+                    "</td>" +
+                    "</tr>"
+                );
+                total += subTs[i];
+            }
+            document.getElementById("total").value = total;
+        } else {
+            var total = 0;
+            var repcodigos = new Array();
+            var repdescripcions = new Array();
+            var repcantidads = new Array();
+            var reppreUs = new Array();
+            var repsubTs = new Array();
+            var repcount = new Array();
+            for (i = 0; i < count.length; i++) {
+                if (count[i] != count[id]) {
+                    repcount.push(i);
+                    repcodigos.push(codigos[i]);
+                    repdescripcions.push(descripcions[i]);
+                    repcantidads.push(cantidads[i]);
+                    reppreUs.push(preUs[i]);
+                    repsubTs.push(subTs[i]);
+                }
+            }
+            count = null;
+            codigos = null;
+            descripcions = null;
+            cantidads = null;
+            preUs = null;
+            subTs = null;
+            count = repcount;
+            codigos = repcodigos;
+            descripcions = repdescripcions;
+            cantidads = repcantidads;
+            preUs = reppreUs;
+            subTs = repsubTs;
+            $("#productTable tbody").remove();
+            if ($("#productTable tbody").length == 0) {
+                $("#productTable").append("<tbody></tbody>");
+            }
+            for (i = 0; i < count.length; i++) {
+                // Append product to the table
+                $("#productTable tbody").append(
+                    "<tr>" +
+                    "<td>" + i + "</td>" +
+                    "<td>" + codigos[i] + "</td>" +
+                    "<td>" + descripcions[i] + "</td>" +
+                    "<td>" + cantidads[i] + "</td>" +
+                    "<td>" + preUs[i] + "</td>" +
+                    "<td>" + subTs[i] + "</td>" +
+                    "<td>" + "<button type='button' " + "onclick='productDelete(this," + i + ")' " + "class='btn btn-default'>" + "Delete" + "</button>" +
+                    "</td>" +
+                    "</tr>"
+                );
+                total += subTs[i];
+            }
+            alert(repdescripcions);
+            document.getElementById("total").value = total;
+        }
+        //document.getElementById("count").innerHTML = count[i];
+    }
+    //Registrar Grilla
+    function registrar() {
+        var rows = "";
+        var RUC = document.getElementById("RUC2").value;
+        for (i = 0; i < count.length; i++){
+            rows += codigos[i] + "-" + descripcions[i] + "-" + cantidads[i] + "-" + preUs[i] + "-" + subTs[i] + "-";
+        }
+        $(document).ready(function () {
+            $.ajax({
+                type: "GET",
+                url: '@Url.Action("Registrar", "AjaxTest")',
+                data: { row: rows, ruc: RUC},
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: successFunc,
+                error: errorFunc
+            });
+            function successFunc(data) {
+                alert(data);
+            }
+            function errorFunc() {
+                alert("No Registrado");
+            }
+        });
+    }
+    //----------------
+</script>
+<h1>Generar Orden de Compra</h1>
+<!--Buscar Proveedor-->
+<label>Razon Social:</label> @Html.TextBox("RazonSocial", "", new { disabled = "true" })
+<label>Direccion:</label> @Html.TextBox("Direccion", "", new { disabled = "true" })
+<label>RUC: </label>@Html.TextBox("RUC2", "", new { disabled = "true" })
+<label>Telefono: </label>@Html.TextBox("Telefono", "", new { disabled = "true" })
+
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal1" style="margin:auto">
+    Buscar Proveedor
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal1" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel" style="text-align: center">Buscar Proveedor</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center">
+                    <div class="form-horizontal">
+                        <h4>Proveedor</h4>
+                        <hr />
+                        <div class="form-group">
+                            RUC:
+                            <div class="col-md-10">
+                                @Html.TextBox("RUC")
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-offset-2 col-md-10">
+                                <button type="button" data-dismiss="modal" aria-label="Close" onclick="buscarProveedor()">Buscar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--End Modal-->
+<!--End Buscar Proveedor-->
+
+
+<br />
+
+<!--Buscar Material-->
+<label>Descripcion: </label>@Html.TextBox("Descripcion", "", new { disabled = "true" })
+<label>PreU: </label>@Html.TextBox("preU", "", new { disabled = "true" })
+@Html.TextBox("CODIGO2", "", new { hidden = "true" })
+<label>Cantidad: </label>@Html.TextBox("Cantidad", 1, new { type = "number", min = "1", max = "99" })
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal2" style="margin:auto">
+    Buscar Material
+</button>
+<button type="button" onclick="productsAdd()">Agregar Material</button>
+<!-- Modal -->
+<div class="modal fade" id="exampleModal2" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel" style="text-align: center">Buscar Proveedor</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center">
+                    <div class="form-horizontal">
+                        <h4>Proveedor</h4>
+                        <hr />
+                        <div class="form-group">
+                            Codigo Material:
+                            <div class="col-md-10">
+                                @Html.TextBox("CODIGO")
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-offset-2 col-md-10">
+                                <button type="button" data-dismiss="modal" aria-label="Close" onclick="buscarMaterial()">Buscar Material</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--End Modal-->
+<!--End Material-->
+<!--GridView-->
+<div class="panel panel-default" align="center">
+    <div class="panel-heading"></div>
+    <div class="panel-body">
+        <table id="productTable" width="300" align="center" class="table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Codigo</th>
+                    <th>Descripcion</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unitario</th>
+                    <th>Sub Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+<div class="left">
+    @Html.TextBox("total", "", new { disabled = "true", @class = "form-control" })
+</div>
+<!--End GridView-->
+<button type="submit" onclick="registrar()">Generar Orden de Compra</button>
